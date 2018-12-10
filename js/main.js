@@ -2,11 +2,6 @@
 var btn = document.getElementById("btn");
 var notesDiv = document.getElementById("notes");
 
-document.addEventListener("keypress", function(e){
-    var key = e.which;
-
-    if(key ===101){
-        notesDiv.insertAdjacentHTML("beforeend","<p>test</p>");
-    }
-   
+btn.addEventListener("click", function(){
+    notesDiv.insertAdjacentHTML("beforeend","<div class='note'><div class='head' contenteditable='true'>Edit topic</div><div class='interior' contenteditable='true'>Post</div></div>");
 });

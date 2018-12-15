@@ -5,7 +5,6 @@ var createNote = function(options) {
     var deleteButton = document.createElement("button");
     var textAreaTopic = document.createElement("textarea");
     var textAreaInterior = document.createElement("textarea");
-    var onDelete;
     const POSITION = 180;
     const POSMULTIPLIER = 3;
     var noteConfig = options || {
@@ -16,7 +15,8 @@ var createNote = function(options) {
         elementLeftPosition : POSITION * Math.random() * POSMULTIPLIER + "px"
 
     }
-
+    textAreaTopic.value = noteConfig.topicContent;
+    textAreaInterior.value = noteConfig.content;
     deleteButton.classList.add("button-head");
     note.classList.add("note");
     textAreaTopic.classList.add("topic");
@@ -31,13 +31,6 @@ var createNote = function(options) {
     document.getElementById("notes").appendChild(note);
 
     note.id = noteConfig.id;
-    textAreaTopic.value = noteConfig.topicCokntent;
-    textAreaInterior.value = noteConfig.content;
-
-    onDelete = function () {
-        var obj = {};
-        deleteNote(obj);
-    }
 
     var getOffSet = function(el){
         const rect = el.getBoundingClientRect();
@@ -58,7 +51,7 @@ var createNote = function(options) {
         var topic = element.childNodes[TOPICINDEX];
         return {
             topicContent : topic.value,
-            interiorContent : textInterior.value,
+            content : textInterior.value,
             id : element.id,
             elementTopPosition : (getOffSet(element).top + "px"),
             elementLeftPosition : (getOffSet(element).left + "px")
@@ -67,7 +60,7 @@ var createNote = function(options) {
     };
 
     var saveNote = function(note) {
-        localStorage.setItem(note.id, note);
+        localStorage.setItem(note.id, JSON.stringify(note));
     }
     
     document.addEventListener("click", function(event){
@@ -78,14 +71,20 @@ var createNote = function(options) {
             divNote.remove();
         };
     });
-    textAreaInterior.addEventListener("focusout", onSave());
-    textAreaTopic.addEventListener("focusout", onSave());
+    document.addEventListener("focusout", function(event){
+        var eventClassList = event.target.classList;
+        if(eventClassList.contains("topic") || eventClassList.contains("interior")){
+            onSave();
+        }
+    });
+
 }
 
 
 var loadNotes = function(){
-    for(var i = 0; i < localStorage.length; i++){
-        console.log(localStorage.key(i));
+    for(var i = 0; i < localStorage.length; i++){   
+        var storageNote = JSON.parse(localStorage.getItem(localStorage.key(i)));
+        createNote(storageNote);
     }
 }
 
@@ -101,7 +100,11 @@ btnNoteCreation.addEventListener("click", function(){
 document.addEventListener("click", function(event){
     moveElement(event);
 });
+
+
 loadNotes();
+
+
 function moveElement(event){
     var posX = 0, posY = 0, posX2 = 0, posY2 = 0;
     var element = event.target;

@@ -6,9 +6,14 @@ var createNote = function(options) {
     var textAreaTopic = document.createElement("textarea");
     var textAreaInterior = document.createElement("textarea");
     var onDelete;
+    const POSITION = 180;
+    const POSMULTIPLIER = 3;
     var noteConfig = options || {
         content : "",
+        topicContent : "",
         id : "sticker_" + new Date().getTime(),
+        elementTopPosition : POSITION * Math.random() * POSMULTIPLIER + "px",
+        elementLeftPosition : POSITION * Math.random() * POSMULTIPLIER + "px"
 
     }
 
@@ -18,10 +23,17 @@ var createNote = function(options) {
     textAreaInterior.classList.add("interior");
     headElement.classList.add("head");
     headElement.appendChild(deleteButton);
+    note.style.top = noteConfig.elementTopPosition;
+    note.style.left = noteConfig.elementLeftPosition;
     note.appendChild(headElement);
     note.appendChild(textAreaTopic);
     note.appendChild(textAreaInterior);
     document.getElementById("notes").appendChild(note);
+
+    note.id = noteConfig.id;
+    textAreaTopic.value = noteConfig.topicCokntent;
+    textAreaInterior.value = noteConfig.content;
+
     onDelete = function () {
         var obj = {};
         deleteNote(obj);
@@ -36,17 +48,20 @@ var createNote = function(options) {
     }
 
     var onSave = function(){
-        saveNote(getNoteObject(noteElement));
+        saveNote(getNoteObject(note));
     }
 
     var getNoteObject = function(element) {
-        var text = element.querySelector("interior");
-        var topic = element.querySelector("topic");
+        var TOPICINDEX = 1;
+        var INTERIORINDEX = 2;
+        var textInterior = element.childNodes[INTERIORINDEX];
+        var topic = element.childNodes[TOPICINDEX];
         return {
-            content : text.value,
+            topicContent : topic.value,
+            interiorContent : textInterior.value,
             id : element.id,
-            elementTopPosition : getOffSet(element).top,
-            elementLeftPosition : getOffSet.left
+            elementTopPosition : (getOffSet(element).top + "px"),
+            elementLeftPosition : (getOffSet(element).left + "px")
     
         }
     };
@@ -54,26 +69,39 @@ var createNote = function(options) {
     var saveNote = function(note) {
         localStorage.setItem(note.id, note);
     }
+    
+    document.addEventListener("click", function(event){
+        if(event.target.classList.contains("button-head")){
+            var divNote = event.target.parentElement.parentElement;
+            var removeId = getNoteObject(divNote).id;
+            localStorage.removeItem(removeId);
+            divNote.remove();
+        };
+    });
+    textAreaInterior.addEventListener("focusout", onSave());
+    textAreaTopic.addEventListener("focusout", onSave());
 }
 
 
-var btn = document.getElementById("btn");
+var loadNotes = function(){
+    for(var i = 0; i < localStorage.length; i++){
+        console.log(localStorage.key(i));
+    }
+}
 
-btn.addEventListener("click", function(){
+var btnNoteCreation = document.getElementById("btn");
+
+btnNoteCreation.addEventListener("click", function(){
     createNote();
 });
 
 
-document.addEventListener("click", function(event){
-    if(event.target.classList.contains("button-head")){
-        event.target.parentElement.parentElement.remove().onDelete();
-    };
-});
+
 
 document.addEventListener("click", function(event){
     moveElement(event);
 });
-
+loadNotes();
 function moveElement(event){
     var posX = 0, posY = 0, posX2 = 0, posY2 = 0;
     var element = event.target;
